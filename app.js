@@ -4,9 +4,19 @@ var Cryptr = require('cryptr')
 var bodyParser = require('body-parser')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser)
-
+// var web3 = require('web3')
 var buttonOptions = ['balance', 'wallet', 'send']
+const publicIp = require('public-ip');
 
+publicIp.v4().then(ip => {
+    console.log(ip);
+    //=> '46.5.21.123'
+});
+
+publicIp.v6().then(ip => {
+    console.log(ip);
+    //=> 'fe80::200:f8ff:fe21:67cf'
+});
 
 var drivers = {
   'Dayton': {
@@ -16,7 +26,7 @@ var drivers = {
 
 
 
-
+// eth key S5Q5wXX319J6Glb4
 
 
 
@@ -94,7 +104,7 @@ app.get('/drivers/:city', (req, res) => {
 })
 
 app.post('/profile', urlencodedParser, function (req, res) {
-  
+
   if (!req.body) return res.sendStatus(400)
   var body = req.body
   var encrypt = cryptr.encrypt(req.body.message)

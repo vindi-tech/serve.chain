@@ -196,6 +196,9 @@ var generation = () => {
   return blockchain
 }
 console.log(generation());
+
+
+
 app.get('/blocks', (req, res) => {
   res.send(JSON.stringify(blockchain))
 })
