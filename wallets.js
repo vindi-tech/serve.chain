@@ -4,13 +4,17 @@ var express =  require('express')
 var app = new express()
 var bodyParser = require('body-parser')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+var math = require('math')
 var fs = require('fs')
 var createWalletPrivateKey = (name) => {
   var hasher = new Cryptr('0x')
   return hasher.encrypt(__dirname + `${name}` + '/walletdata.txt')
 }
 console.log(createWalletPrivateKey(''));
+const mnemonicWords = require('mnemonic-words');
 
+
+console.log(generatePhrase(mnemonicWords));
 var generatePublicAddress = (privateKey, wallet) => {
   var hasher = new Cryptr(privateKey)
 

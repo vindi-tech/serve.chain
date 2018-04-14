@@ -3,10 +3,15 @@ var moment = require('moment')
 var express =  require('express')
 var app = new express()
 var bodyParser = require('body-parser')
+var request = require('request')
+
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser)
-var txOuts = [{value:10000, address: 'jordan', id:'0x0000000'}]
+
+var txOuts = [{from:'gen', address:'jordan', value:100000}]
+
 var value = 100000
+
 class Block {
     constructor(index, previousHash, timestamp, data, hash) {
         this.index = index;
@@ -22,12 +27,15 @@ var calculateHash = (block) => {
   var encrypt = cryptr.encrypt(block.timestamp)
   return encrypt
 }
+
 var getGenesisBlock = () => {
-    return new Block(0, "0", 1465154705, "my genesis block!!", "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
+    var data ={txOut: { value: 100000, address: 'jordan' },}
+
+    return new Block(0, "0", 1465154705, data, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
 };
 
 var blockchain = [getGenesisBlock()];
-var blockchain1 = [getGenesisBlock()];
+// var blockchain1 = [getGenesisBlock()];
 
 var getLatestBlock = () => {
   return blockchain[blockchain.length - 1]
@@ -45,7 +53,7 @@ var generateNextBlock = (blockData) => {
     block.hash = nextHash
     return block
 };
-blockchain1.push(generateNextBlock('h'))
+// blockchain1.push(generateNextBlock('h'))
 
 var isValidNewBlock = (newBlock, previousBlock) => {
     if (previousBlock.index + 1 !== newBlock.index) {
@@ -61,6 +69,7 @@ var isValidNewBlock = (newBlock, previousBlock) => {
     return true;
 };
 // console.log('isValidNewBlock', isValidNewBlock(generateNextBlock('j'), getLatestBlock()));
+
 var checkForNewBlocks = (chain, newChain) => {
   var diff = newChain.length - chain.length
   var newBlocks = []
@@ -75,6 +84,7 @@ var checkForNewBlocks = (chain, newChain) => {
     return 'no new'
   }
 }
+
 var isValidChain = (chain, blockchain) => {
   // checkForNewBlocks(chain, blockchain)
   for (var i = chain.length - 1; i < chain.length; i++) {
@@ -102,12 +112,22 @@ var replaceChain = (newBlocks, blockchain) => {
         console.log('Received blockchain invalid');
     }
 };
-replaceChain(blockchain1, blockchain)
+// replaceChain(blockchain1, blockchain)
 
+var getAllTx = (blockchain) => {
+  var txOutsAll = []
+  for (var i = 0; i < blockchain.length; i++) {
+    var transaction = blockchain[i].data
+    txOutsAll.push(transaction)
+    console.log('transaction',transaction);
+  }
+  return txOutsAll
+}
 var findUnspentTx = (txOuts) => {
+
   var uSTXO = []
   for (var i = 0; i < txOuts.length; i++) {
-    if (txOuts[i].address === 'jordan') {
+    if (txOuts[i].txOut.address=== 'jordan') {
       uSTXO.push(txOuts[i])
     }
 
@@ -115,7 +135,7 @@ var findUnspentTx = (txOuts) => {
   console.log('ust');
   return uSTXO
 }
-console.log('findUnspentTx(txOuts)',findUnspentTx(txOuts) );
+
 var createTxOut = (receiver, myAddress, amount, send) => {
   var leftOver = amount - send
   const txOut1 = {value:send, address: receiver}
@@ -137,6 +157,7 @@ var createTransaction = (privateKey, tx) => {
     txInOut: [tx[0], tx[1]],
     txOut:tx[0],
     leftOver:tx[1],
+    txSpent: txOuts[0],
     blockIndex: blockchain.length
   }
 
@@ -195,38 +216,70 @@ var generation = () => {
   return blockchain
 }
 
+var syncChain = (peer) => { // performs a post request to your peers address
+  var options = { method: 'GET',
+  url: `http://localhost:${peer}/blocks`,
+  headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
+     'Cache-Control': 'no-cache' } };
 
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  return body
+  console.log('body', body);
+});
 
+}
+
+var send = (peer, to, amount) => { // performs a post request to your peers address
+  var options = { method: 'POST',
+  url: `http://localhost:${peer}/blocks/${to}/${amount}`,
+  headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
+     'Cache-Control': 'no-cache' } };
+
+request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  return body.toString()
+  console.log('body', body);
+});
+
+}
 app.get('/blocks', (req, res) => {
   res.send(JSON.stringify(blockchain))
 })
 
 app.post('/blocks/:to/:amount', urlencodedParser, (req, res) => {
-  var chain = blockchain;
+  var chain = [getGenesisBlock()]
   var tx = createTxOut(req.params.to, 'jordan', `${value}`,req.params.amount)
     value=`${value}` - req.params.amount
-  var newBlock = generateNextBlock(tx)
+  var newBlock = createBlockWithTransaction(createTransaction('0x00', tx))
   if (isValidNewBlock(newBlock, getLatestBlock()) ===true) {
     blockchain.push(newBlock)
-    console.log(chain);
-    res.send(newBlock)
-
+    console.log(blockchain);
+    res.send(blockchain)
   }
 
 })
+app.get('/send/:to/:amount',(req, res) => {
+  send(3000,  req.params.to, req.params.amount)
+  send(3002,  req.params.to, req.params.amount)
+  res.send(blockchain)
+})
 
-app.get('/tx/:to/:amount', urlencodedParser, (req, res) => {
+app.get('/tx/:to/:amount', (req, res) => {
 
-  if (checkWaitTime(getLatestBlock()) === true) {
+
     console.log('ready to create block');
     var tx = createTxOut(req.params.to, 'jordan', `${value}`, req.params.amount)
     console.log('new TxOut created', tx);
-    var newTrans = createBlockWithTransaction(createTransaction('0x00', tx)) *100
+    var newTrans = createBlockWithTransaction(createTransaction('0x00', tx))
 
     console.log(generateNextBlock(newTrans.data));
     blockchain.push(newTrans)
-  }
+    res.send(newTrans)
+    console.log('findUnspentTx(txOuts)',findUnspentTx(getAllTx(blockchain)) );
+
 
 })
+console.log('findUnspentTx(txOuts)',findUnspentTx(getAllTx(blockchain)) );
 
 app.listen(3000)
