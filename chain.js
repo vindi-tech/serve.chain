@@ -183,7 +183,6 @@ console.log();
   }
 
 }
-checkWaitTime(createBlockWithTransaction(createTransaction('0xxx000000000ncncn', createTxOut('chase', 'jordan', 100000, 1000))))
 
 var generation = () => {
   var newT = []
@@ -195,7 +194,6 @@ var generation = () => {
   }
   return blockchain
 }
-console.log(generation());
 
 
 
