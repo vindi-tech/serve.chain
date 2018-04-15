@@ -123,6 +123,7 @@ var getAllTx = (blockchain) => {
   }
   return txOutsAll
 }
+
 var findUnspentTx = (txOuts) => {
 
   var uSTXO = []
@@ -192,7 +193,7 @@ var checkWaitTime = (lastBlock) => {
   var time = lastBlock.timestamp
   var currentTime = moment().format('ll') + moment().format('LTS')
   var cur = moment().seconds(currentTime)
-console.log();
+  console.log();
   var diff = moment(currentTime).from(time)
   console.log(diff);
   if (diff >='a few seconds ago') {
@@ -222,11 +223,11 @@ var syncChain = (peer) => { // performs a post request to your peers address
   headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
      'Cache-Control': 'no-cache' } };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
 
-  console.log('body', body);
-});
+      console.log('body', body);
+    });
 
 }
 

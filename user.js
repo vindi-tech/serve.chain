@@ -6,6 +6,7 @@ var bodyParser = require('body-parser')
 var request = require('request')
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 app.use(urlencodedParser)
 
 var txOuts = [{from:'gen', address:'jordan', value:100000}]
@@ -123,6 +124,7 @@ var getAllTx = (blockchain) => {
   }
   return txOutsAll
 }
+
 var findUnspentTx = (txOuts) => {
 
   var uSTXO = []
@@ -192,7 +194,7 @@ var checkWaitTime = (lastBlock) => {
   var time = lastBlock.timestamp
   var currentTime = moment().format('ll') + moment().format('LTS')
   var cur = moment().seconds(currentTime)
-console.log();
+
   var diff = moment(currentTime).from(time)
   console.log(diff);
   if (diff >='a few seconds ago') {
@@ -222,24 +224,25 @@ var send = (peer, to, amount) => { // performs a post request to your peers addr
   headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
      'Cache-Control': 'no-cache' } };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
-  return body.toString()
-  console.log('body', body);
-});
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
+      return body.toString()
+      console.log('body', body);
+    });
 
 }
+
 var syncChain = (peer) => { // performs a post request to your peers address
   var options = { method: 'GET',
   url: `http://localhost:${peer}/blocks`,
   headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
      'Cache-Control': 'no-cache' } };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
 
-  console.log('body', body);
-});
+      console.log('body', body);
+    });
 
 }
 
@@ -276,7 +279,7 @@ app.get('/tx/:to/:amount', (req, res) => {
     console.log('findUnspentTx(txOuts)',findUnspentTx(getAllTx(blockchain)) );
 
 
-})
+});
 console.log('findUnspentTx(txOuts)',findUnspentTx(getAllTx(blockchain)) );
 
 app.listen(3002)

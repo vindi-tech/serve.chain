@@ -192,7 +192,7 @@ var checkWaitTime = (lastBlock) => {
   var time = lastBlock.timestamp
   var currentTime = moment().format('ll') + moment().format('LTS')
   var cur = moment().seconds(currentTime)
-console.log();
+  console.log();
   var diff = moment(currentTime).from(time)
   console.log(diff);
   if (diff >='a few seconds ago') {
@@ -222,11 +222,11 @@ var syncChain = (peer) => { // performs a post request to your peers address
   headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
      'Cache-Control': 'no-cache' } };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
-  return body
-  console.log('body', body);
-});
+  request(options, function (error, response, body) {
+    if (error) throw new Error(error);
+    return body
+    console.log('body', body);
+  });
 
 }
 
@@ -236,13 +236,14 @@ var send = (peer, to, amount) => { // performs a post request to your peers addr
   headers:{ 'Postman-Token': 'd6b43245-53a3-063a-7b94-85aff6374e69',
      'Cache-Control': 'no-cache' } };
 
-request(options, function (error, response, body) {
-  if (error) throw new Error(error);
-  return body.toString()
-  console.log('body', body);
-});
+  request(options, function (error, response, body) {
+    if (error) throw new Error(error);
+    return body.toString()
+    console.log('body', body);
+  });
 
 }
+
 app.get('/blocks', (req, res) => {
   res.send(JSON.stringify(blockchain))
 })
@@ -259,6 +260,7 @@ app.post('/blocks/:to/:amount', urlencodedParser, (req, res) => {
   }
 
 })
+
 app.get('/send/:to/:amount',(req, res) => {
   send(3000,  req.params.to, req.params.amount)
   send(3002,  req.params.to, req.params.amount)
