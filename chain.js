@@ -4,13 +4,18 @@ var express =  require('express')
 var app = new express()
 var bodyParser = require('body-parser')
 var request = require('request')
+const publicIp = require('public-ip');
+const bytesize = require('bytesize');
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 app.use(urlencodedParser)
 
 var txOuts = [{from:'gen', address:'jordan', value:100000}]
 
 var value = 100000
+
+var peers = ['localhost:3000', 'localhost:3002']
 
 class Block {
     constructor(index, previousHash, timestamp, data, hash) {
@@ -123,6 +128,7 @@ var getAllTx = (blockchain) => {
   }
   return txOutsAll
 }
+
 var findUnspentTx = (txOuts) => {
 
   var uSTXO = []
@@ -138,10 +144,13 @@ var findUnspentTx = (txOuts) => {
 
 var createTxOut = (receiver, myAddress, amount, send) => {
   var leftOver = amount - send
+
   const txOut1 = {value:send, address: receiver}
+
   if (leftOver === 0) {
     return [txOut1]
-  } else {
+  }
+  else {
     const txOut2 =  {value:leftOver, address: myAddress}
     return [txOut1, txOut2]
   }
@@ -149,8 +158,11 @@ var createTxOut = (receiver, myAddress, amount, send) => {
 
 var createTransaction = (privateKey, tx) => {
   txOuts.push(tx[1])
+
   console.time('createTransaction')
+
   var cryptr = new Cryptr(privateKey);
+
   var transaction = {
     id: '',
     time:moment().format('ll') + ' ' + moment().format('LTS'),
@@ -169,7 +181,9 @@ var createTransaction = (privateKey, tx) => {
     console.timeEnd('createTransaction')
     transaction.value = transaction.txOut.value
     return transaction
-  } else {
+  }
+  else {
+
     var ider = new Cryptr(transaction.time)
 
     var encrypt = cryptr.encrypt(transaction.toString())
@@ -185,8 +199,6 @@ var createBlockWithTransaction = (blockData) => {
   var block = generateNextBlock(blockData)
   return block
 }
-
-console.log(createBlockWithTransaction(createTransaction('0xxx000000000ncncn', createTxOut('chase', 'jordan', 100000, 1000))));
 
 var checkWaitTime = (lastBlock) => {
   var time = lastBlock.timestamp
@@ -282,6 +294,20 @@ app.get('/tx/:to/:amount', (req, res) => {
 
 
 })
-console.log('findUnspentTx(txOuts)',findUnspentTx(getAllTx(blockchain)) );
+const size = bytesize.stringSize(blockchain.toString());
+console.log(size);
+app.listen(3000, () => {
 
-app.listen(3000)
+  console.log('\n     Your ip address');
+
+  publicIp.v4().then(ip => {
+      console.log('ipv4 : ',ip);
+      //=> '46.5.21.123'
+  });
+
+  publicIp.v6().then(ip => {
+      console.log('ipv6 :',ip);
+      //=> 'fe80::200:f8ff:fe21:67cf'
+  });
+
+})
