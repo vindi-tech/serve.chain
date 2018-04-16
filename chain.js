@@ -11,11 +11,26 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 app.use(urlencodedParser)
 
+/*
+# allTxOuts #
+An array containing allTxOuts with a genisis transaction to start out
+*/
+
 var txOuts = [{from:'gen', address:'jordan', value:100000}]
 
 var value = 100000
 
+/*
+# Peers #
+an array containing the hostname of all peers. This has been manually added
+*/
+
 var peers = ['localhost:3000', 'localhost:3002']
+
+/*
+# Block #
+a constructor to create a block
+*/
 
 class Block {
     constructor(index, previousHash, timestamp, data, hash) {
@@ -27,11 +42,21 @@ class Block {
     }
 }
 
+/*
+# Calculate the Hash for a Block #
+Uses the block  index as the key and returns the timestamp of the block encrypted
+*/
+
 var calculateHash = (block) => {
   var cryptr = new Cryptr(block.index.toString())
   var encrypt = cryptr.encrypt(block.timestamp)
   return encrypt
 }
+
+/*
+# Create the Genisis Block #
+creates a predeined genisis block to be the first block in the blockchain
+*/
 
 var getGenesisBlock = () => {
     var data ={txOut: { value: 100000, address: 'jordan' },}
@@ -39,12 +64,27 @@ var getGenesisBlock = () => {
     return new Block(0, "0", 1465154705, data, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
 };
 
+/*
+# Blockchain #
+The blockchain with genisis block created
+*/
+
 var blockchain = [getGenesisBlock()];
-// var blockchain1 = [getGenesisBlock()];
+
+/*
+# Find the Most Recent block #
+takes NO params and returns the last block in the blockchain
+*/
 
 var getLatestBlock = () => {
   return blockchain[blockchain.length - 1]
 }
+
+/*
+# Generate the Next Block #
+takes blockData as params
+produces a new block based off of own blockchain data
+*/
 
 var generateNextBlock = (blockData) => {
     var previousBlock = getLatestBlock();
@@ -58,7 +98,17 @@ var generateNextBlock = (blockData) => {
     block.hash = nextHash
     return block
 };
-// blockchain1.push(generateNextBlock('h'))
+
+/*
+# Check if a block is valid #
+takes a new block and previous as params
+new block is got from the function generateNextBlock()
+previous block is got from the function getLatestBlock()
+## Checks for ##
+  - valid index - by checking if the previousBlock's index + 1 is equal to the new block index
+  - valid previousHash - by checking if the previousBlock's hash is equal to the newBlock's previous hash
+  - valid hash - by calculating the hash for the newBlock and checking if it is equal to the newBlock's hash
+*/
 
 var isValidNewBlock = (newBlock, previousBlock) => {
     if (previousBlock.index + 1 !== newBlock.index) {
@@ -73,7 +123,11 @@ var isValidNewBlock = (newBlock, previousBlock) => {
     }
     return true;
 };
-// console.log('isValidNewBlock', isValidNewBlock(generateNextBlock('j'), getLatestBlock()));
+
+/*
+# Check for New Blocks #
+checks for new blocks by comparing the length of the current blockchain and a new blockchain
+*/
 
 var checkForNewBlocks = (chain, newChain) => {
   var diff = newChain.length - chain.length
@@ -90,6 +144,11 @@ var checkForNewBlocks = (chain, newChain) => {
   }
 }
 
+/*
+# Is Chain Valid #
+checks validity of chain by seeing if every block at index i can be validated by the function isValidNewBlock checking the current block at index i and the previous block which should be at i - 1
+*/
+
 var isValidChain = (chain, blockchain) => {
   // checkForNewBlocks(chain, blockchain)
   for (var i = chain.length - 1; i < chain.length; i++) {
@@ -102,6 +161,16 @@ var isValidChain = (chain, blockchain) => {
     }
   }
 }
+
+/*
+# replaceChain #
+takes newBlocks and the blockchain as params
+checks for new blocks and then checks if chain is valid
+IF true
+  new blocks are added to the blockchain
+IF false
+  received blockchain is invalid
+*/
 
 var replaceChain = (newBlocks, blockchain) => {
     var news = checkForNewBlocks(blockchain, newBlocks)
@@ -117,7 +186,11 @@ var replaceChain = (newBlocks, blockchain) => {
         console.log('Received blockchain invalid');
     }
 };
-// replaceChain(blockchain1, blockchain)
+
+/*
+# getAllTx #
+returns all transactions by searching each blocks data in the blockchin
+*/
 
 var getAllTx = (blockchain) => {
   var txOutsAll = []
@@ -128,6 +201,11 @@ var getAllTx = (blockchain) => {
   }
   return txOutsAll
 }
+
+/*
+# Find Unspent txOuts #
+checks each txOut in allTxOuts and returns the txOut's with an address equal to the current users address in an array
+*/
 
 var findUnspentTx = (txOuts) => {
 
@@ -142,6 +220,15 @@ var findUnspentTx = (txOuts) => {
   return uSTXO
 }
 
+/*
+# Create a TxOut #
+- takes the params receiver, myAddress, amount, send
+- calculates the left over amount by subtracting the send amount from the amount param
+TxOut1 - is the txOut the receiver will use {value:1, address: chase}
+TxOut2 - is the txOut the sender will use if their are leftOver tokens after sending the amount out of a unspent TxOut
+Returns an array of [txOut1, txOut2]
+*/
+
 var createTxOut = (receiver, myAddress, amount, send) => {
   var leftOver = amount - send
 
@@ -155,6 +242,12 @@ var createTxOut = (receiver, myAddress, amount, send) => {
     return [txOut1, txOut2]
   }
 }
+
+/*
+# Create a transaction #
+- takes a privateKey and the Tx as params
+The tx is returned by calling the function createTxOut and returns a transaction object
+*/
 
 var createTransaction = (privateKey, tx) => {
   txOuts.push(tx[1])
@@ -193,7 +286,12 @@ var createTransaction = (privateKey, tx) => {
 
   }
 }
-// console.log(createTransaction('0x0000000', createTxOut('a', 'b', 10, 2)));
+
+/*
+# Create Block with Transaction #
+takes blockData as a param. The block data is returned from calling the createTransaction function
+Returns the block
+*/
 
 var createBlockWithTransaction = (blockData) => {
   var block = generateNextBlock(blockData)
@@ -228,6 +326,12 @@ var generation = () => {
   return blockchain
 }
 
+/*
+# Sync Chain #
+takes peer is a param which should be the peers port
+Performs a ger request and returns the peers chain
+*/
+
 var syncChain = (peer) => { // performs a post request to your peers address
   var options = { method: 'GET',
   url: `http://localhost:${peer}/blocks`,
@@ -241,6 +345,12 @@ var syncChain = (peer) => { // performs a post request to your peers address
   });
 
 }
+
+/*
+# Send #
+takes the peer, the receiver, and the amount as params
+Perforns a post request to the peer and if the block is valid then it is added to the peers blockchain
+*/
 
 var send = (peer, to, amount) => { // performs a post request to your peers address
   var options = { method: 'POST',
@@ -256,9 +366,19 @@ var send = (peer, to, amount) => { // performs a post request to your peers addr
 
 }
 
+/*
+# /blocks #
+Allows users to perform a GET request and return all the blocks
+*/
+
 app.get('/blocks', (req, res) => {
   res.send(JSON.stringify(blockchain))
 })
+
+/*
+# /blocks/to/amount #
+Allows users to post to a peer and on a request the peers blockchain is updated
+*/
 
 app.post('/blocks/:to/:amount', urlencodedParser, (req, res) => {
   var chain = [getGenesisBlock()]
@@ -273,11 +393,18 @@ app.post('/blocks/:to/:amount', urlencodedParser, (req, res) => {
 
 })
 
+/*
+# /send/to/amount #
+Allows users to send data to peers by performing a GET request that performs the function send() which is able to POST data to self and to your peers
+*/
+
 app.get('/send/:to/:amount',(req, res) => {
   send(3000,  req.params.to, req.params.amount)
   send(3002,  req.params.to, req.params.amount)
   res.send(blockchain)
 })
+
+
 
 app.get('/tx/:to/:amount', (req, res) => {
 
@@ -294,8 +421,8 @@ app.get('/tx/:to/:amount', (req, res) => {
 
 
 })
-const size = bytesize.stringSize(blockchain.toString());
-console.log(size);
+
+
 app.listen(3000, () => {
 
   console.log('\n     Your ip address');

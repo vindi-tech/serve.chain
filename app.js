@@ -5,7 +5,7 @@ var bodyParser = require('body-parser')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.use(urlencodedParser)
 // var web3 = require('web3')
-var buttonOptions = ['balance', 'wallet', 'send']
+var buttonOptions = ['account_balance_wallet', 'send', 'send']
 const publicIp = require('public-ip');
 
 publicIp.v4().then(ip => {
