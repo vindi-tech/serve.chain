@@ -6,8 +6,9 @@ var bodyParser = require('body-parser')
 var request = require('request')
 const publicIp = require('public-ip');
 const bytesize = require('bytesize');
-
+var crypto = require('crypto')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+var tobinary = require('tobinary');
 
 app.use(urlencodedParser)
 
@@ -16,16 +17,16 @@ app.use(urlencodedParser)
 An array containing allTxOuts with a genisis transaction to start out
 */
 
-var txOuts = [{from:'gen', address:'jordan', value:100000}]
+var txOuts = [{from: 'gen', address: 'jordan', value: 100000}];
 
-var value = 100000
+var value = 100000;
 
 /*
 # Peers #
 an array containing the hostname of all peers. This has been manually added
 */
 
-var peers = ['localhost:3000', 'localhost:3002']
+var peers = ['localhost:3000', 'localhost:3002'];
 
 /*
 # Block #
@@ -43,19 +44,31 @@ class Block {
 }
 
 /*
-# Calculate the Hash for a Block #
+# Calculate the Hash for a Block
+@block {object} - a block to calculate the hash for
 Uses the block  index as the key and returns the timestamp of the block encrypted
 */
 
 var calculateHash = (block) => {
-  var cryptr = new Cryptr(block.index.toString())
-  var encrypt = cryptr.encrypt(block.timestamp)
-  return encrypt
+  const secret = block.timestamp;
+  const hash = crypto.createHmac('sha256', secret)
+                   .update(block.index + block.data)
+                   .digest('hex');
+  return hash
+}
+
+/*
+#hashToBinary
+is the hash of a block converted to binary in order to get the difficulty
+*/
+
+var hashToBinary = (hash) => {
+  return tobinary(hash)
 }
 
 /*
 # Create the Genisis Block #
-creates a predeined genisis block to be the first block in the blockchain
+creates a predefined genisis block to be the first block in the blockchain
 */
 
 var getGenesisBlock = () => {
@@ -91,14 +104,14 @@ var generateNextBlock = (blockData) => {
     var nextIndex = previousBlock.index + 1;
     var day = moment().format('ll')
     var hour = moment().format('LTS')
-    var nextTimestamp = day;
+    var nextTimestamp = day + ' ' + hour;
 
     var block = new Block(nextIndex, previousBlock.hash, nextTimestamp, blockData)
     var nextHash = calculateHash(block);
     block.hash = nextHash
     return block
 };
-
+console.log(generateNextBlock('j t 6'));
 /*
 # Check if a block is valid #
 takes a new block and previous as params
@@ -297,6 +310,12 @@ var createBlockWithTransaction = (blockData) => {
   var block = generateNextBlock(blockData)
   return block
 }
+
+/*
+# Check Wait Time
+@param {object} - latestBlock - gets the latest block in the blockchain by calling getLatestBlock()
+Checks to see if it has been a few seconds since the creation of the last block
+*/
 
 var checkWaitTime = (lastBlock) => {
   var time = lastBlock.timestamp

@@ -29,6 +29,11 @@ var makeTxId = (address, value, from) => { // makes the txid by using the params
   return hash
 }
 
+/*
+Tx
+Create a txIn and txOut in 1 signle object called a Tx
+*/
+
 class Tx {
   constructor(spend, from, address, value) {
     this.spend = spend;
@@ -53,10 +58,10 @@ creates a txOut or the remainder balance in the form of a returned payment from 
 */
 
 class txOut {
-  constructor(spend, from, address, value) {
+  constructor(spend, from, address, value, currency) {
 
-    this.spend = spend
-
+      this.spend = spend
+      this.currency = currency
       this.address= from,
       this.from= from,
       this.value = spend.value - value,
@@ -72,7 +77,7 @@ Creates a txIn which is the tx that goes to the new owner
 */
 
 class txIn {
-    constructor(spend, address, value) {
+    constructor(spend, address, value, currency) {
         this.spend = spend,
         this.fromId= spend.id,
         this.from= spend.address,
@@ -85,19 +90,25 @@ class txIn {
 
 /*
 A function to create a new txOut
+if the address is bank the txOut currency will be usd and the txin currency will be vindi.coin
 */
 
 var newTxOut = (txIn) => {
-  var txO = new txOut(txIn.spend, txIn.from, txIn.address, txIn.value);
-  return txO
+  if (txIn.address === 'bank') {
+    var txO = new txOut(txIn.spend, txIn.from, txIn.address, txIn.value, 'cash');
+    return txO
+  } else {
+    var txO = new txOut(txIn.spend, txIn.from, txIn.address, txIn.value, txIn.currency);
+    return txO
+  }
 }
 
 /*
 A function to create a new txIn
 */
 
-var newTxIn = (spend, address, value) => {
-  var txO = new txIn(spend, address, value);
+var newTxIn = (spend, address, value, currency) => {
+  var txO = new txIn(spend, address, value, currency);
   return txO
 }
 
@@ -116,3 +127,16 @@ var transaction = (spend, address, value) => {
 }
 
 console.log(transaction(txOuts[0], 'chase', 100000));
+
+var testTransactionSpeed = (size) => {
+  console.time('tSpeed')
+  for (var i = 0; i < size; i++) {
+    transaction(txOuts[0], 'chase', 100000) ;
+
+  }
+  console.timeEnd('tSpeed')
+
+  return `Just tested the speed of ${size} transactions`
+
+}
+console.log(testTransactionSpeed(1000));
