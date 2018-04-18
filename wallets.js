@@ -37,15 +37,17 @@ var generatePublicAddress = (privateKey) => {
 
 /*
 # Create wallet #
-takes an address as a param
+@param {string} - address - your wallet address
 the address is calculated by calling generatePublicAddress()
 A file is created with the name of your address and containing your address
 */
 
-var createWallet = (address) => {
+var createWallet = (address: string) => {
   fs.writeFile(__dirname + `/${address}`, `${address}`, (err) => {
   if (err) throw err;
   wallets.push(address)
   console.log('wallet has been created',`${address}`);
   });
 }
+
+// TODO public private key with assymetric cryotography

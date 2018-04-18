@@ -9,7 +9,7 @@ const bytesize = require('bytesize');
 var crypto = require('crypto')
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 var tobinary = require('tobinary');
-
+var keypair = require('keypair');
 app.use(urlencodedParser)
 
 /*
@@ -43,6 +43,41 @@ class Block {
     }
 }
 
+var calculateHashForChain = (blockchain) => {
+  const secret = blockchain.toString();
+  const hash = crypto.createHmac('sha256', secret)
+                   .update(blockchain.toString())
+                   .digest('hex');
+  return hash
+}
+
+/*
+# Create the Genisis Block #
+creates a predefined genisis block to be the first block in the blockchain
+*/
+
+var getGenesisBlock = () => {
+    var data ={txOut: { value: 10000, address: 'jordan' },}
+
+    return new Block(0, "0", 1465154703, data, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
+};
+
+/*
+# Blockchain #
+The blockchain with genisis block created
+*/
+
+var blockchain = [getGenesisBlock()];
+
+
+var createChain = (blockchain) => {
+  var chain = {
+    hash: calculateHashForChain(blockchain),
+  };
+
+  return chain
+}
+console.log(createChain(blockchain));
 /*
 # Calculate the Hash for a Block
 @block {object} - a block to calculate the hash for
@@ -52,7 +87,7 @@ Uses the block  index as the key and returns the timestamp of the block encrypte
 var calculateHash = (block) => {
   const secret = block.timestamp;
   const hash = crypto.createHmac('sha256', secret)
-                   .update(block.index + block.data)
+                   .update(block.index + block.data + block.previousHash)
                    .digest('hex');
   return hash
 }
@@ -66,32 +101,13 @@ var hashToBinary = (hash) => {
   return tobinary(hash)
 }
 
-/*
-# Create the Genisis Block #
-creates a predefined genisis block to be the first block in the blockchain
-*/
-
-var getGenesisBlock = () => {
-    var data ={txOut: { value: 100000, address: 'jordan' },}
-
-    return new Block(0, "0", 1465154705, data, "816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7");
-};
-
-/*
-# Blockchain #
-The blockchain with genisis block created
-*/
-
-var blockchain = [getGenesisBlock()];
 
 /*
 # Find the Most Recent block #
 takes NO params and returns the last block in the blockchain
 */
 
-var getLatestBlock = () => {
-  return blockchain[blockchain.length - 1]
-}
+var getLatestBlock = () => { return blockchain[blockchain.length - 1]}
 
 /*
 # Generate the Next Block #
@@ -455,5 +471,6 @@ app.listen(3000, () => {
       console.log('ipv6 :',ip);
       //=> 'fe80::200:f8ff:fe21:67cf'
   });
-
+  var pair = keypair();
+  console.log(pair);
 })
