@@ -274,3 +274,215 @@ Creates the txIn and txOut objects needed for a valid transactions
          }
          return(trans)
        }
+
+_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+## trading.js
+For deploying a tradeable currency as a Smart Contract
+
+_______________________________________________________________________________________________________________________________________
+
+### updateBalanceState - updates the balance of the sender and receiver object
+- @params {object} - peer
+- @params {object} - you
+- @params {int} - amount
+- @returns {object} - balanceState
+
+#### code : 
+
+       var updateBalanceState = (peer, you, amount) => {
+         if (amount > you.balance) {
+           return 'insufficient funds'
+         } else {
+           peer.balance = parseInt(peer.balance) + amount;
+           you.balance = parseInt(you.balance) - amount
+           var obj = {
+             [`peer`]:{ balance: parseInt(peer.balance) + parseInt(amount)},
+             [`you`]: { balance: parseInt(you.balance) - parseInt(amount)}
+           }
+           console.log('\nupdated balance state...');
+           return obj
+       }
+       }
+
+_______________________________________________________________________________________________________________________________________
+
+### Trade Contract a constructor for creating a TradeContract
+
+- @params {string} - creatorAddress
+- @params {string} - address
+- @params {string} - type
+- @params {string} - tokenSymbol
+- @params {int} - tokenAmount
+- @params {array} - blockchain
+
+### code : 
+
+              class TradeContract {
+                constructor(creatorAddress, address, type, tokenSymbol, tokenAmount, blockchain) {
+
+                  this.address = address,
+                  this.creatorAddress = creatorAddress;
+                  this.type = type
+                  this.tokenSymbol = tokenSymbol
+                  this.tokenAmount = tokenAmount
+                  this.timestamp = moment().format('LTS') + moment().format()
+                  this.blockchain = [schain.getContractGenisisBlock(this, schain.calculateHash, '0x00')]
+                  this.members = {
+                    [`${address}`]: { balance: tokenAmount, type: 'contract', owner: creatorAddress},
+                    [`${creatorAddress}`]: {balance:0, type: 'user', }
+                  };
+
+
+                  exec.emit('contract', this)
+
+                  this.execute = {
+                    updateBalanceState: updateBalanceState,
+                    newTxIn: stx.newTxIn,
+                    newTxOut: stx.newTxOut,
+                    transaction: stx.transaction,
+                    makeTxId: stx.makeTxId,
+                    deployContract: function deployContract(blockchain, members) {
+                      if (blockchain.length > 0) {
+                        console.log('\nsigned transacton at index 0. Ready to load contract to account');
+                        var data = {
+                            txIn:{
+                              spend: blockchain[0].data,
+                              from: address,
+                              address: creatorAddress,
+                              value:tokenAmount,
+                              id: stx.makeTxId(`${address}`, this.value, this.from),
+                            },
+                            txOut:{
+                              spend: blockchain[0].data.txIn,
+                              from: blockchain[0].data.txIn.address,
+                              address: address,
+                              value: members[address].balance - tokenAmount,
+                              id: stx.makeTxId(`${address}`, `value`, `from`),
+                            },
+                          }
+                          var latest = schain.getLatestBlock(vindicoin.blockchain)
+                          var nextBlock =  schain.generateNextBlock(data, latest, vindicoin.blockchain)
+
+                          console.log('next block', nextBlock);
+                          if (schain.isValidNewBlock(nextBlock, latest) === true) {
+                            console.log('true');
+                            vindicoin.blockchain.push(nextBlock)
+                            return vindicoin.blockchain.indexOf(nextBlock)
+                            // return updateBalanceState(members[`${creatorAddress}`],members[`${address}`], tokenAmount)
+
+                          }
+
+                      }
+                    },
+
+                    findUSTXO: schain.findUnspentTx,
+                    transaction: function (spend, address, value,newTxIn, newTxOut) {
+                      // var txI = new txIn(spend,address,value, currency)
+                      // var txO = new txOut(spend, from, address, value, currency)
+                      var txIn = newTxIn(spend, address, value, stx.makeTxId(address, value, spend.address))
+                      var txOut = newTxOut(txIn, value, stx.makeTxId(txIn.address, value, spend.from))
+                      var data = {txIn,txOut}
+                      var nextblock = schain.generateNextBlock(data, schain.getLatestBlock(vindicoin.blockchain), vindicoin.blockchain)
+                      console.log('\ntransaction!!!!!!\n');
+                      console.log();
+                      if (schain.isValidNewBlock(nextblock, schain.getLatestBlock(vindicoin.blockchain)) === true) {
+                        console.log('true transaction\n');
+                        return(nextblock)
+                      }
+                    }
+                  };
+                }
+              };
+_______________________________________________________________________________________________________________________________________
+
+#### TradeContract.members 
+A key in the tradecontract json object that holds all the members of the contract. Starting out its only the token address and the creatorAddress
+
+##### code :
+
+           this.members = {
+             [`${address}`]: { balance: tokenAmount, type: 'contract', owner: creatorAddress},
+             [`${creatorAddress}`]: {balance:0, type: 'user', }
+           };
+_______________________________________________________________________________________________________________________________________
+
+#### TradeContract.execute : functions that are able to be executed when interacting with the contract
+- updateBalanceState
+- newTxIn
+- newTxOut
+- transaction
+- makeTxId
+- findUSTXO
+- deployContract
+_______________________________________________________________________________________________________________________________________
+#### TradeContract.execute.deployContract()
+Allows users to deploy a trading contract. </br>
+Upon creation all the tokens belong to the address of the contract but when deployContract is ran it creates a transaction containing the txIn and txOut data of the tokens being moved from the contracts address to the contract creator's address. If the created block is valid it will add the block to the current users blockchain.
+
+- @param {array} - blockchain - the blockchain
+- @param {object} - members : the members object containing the current "state" of members and their balance
+
+##### code :
+             deployContract: function deployContract(blockchain, members) {
+               if (blockchain.length > 0) {
+                 console.log('\nsigned transacton at index 0. Ready to load contract to account');
+                 var data = {
+                     txIn:{
+                       spend: blockchain[0].data,
+                       from: address,
+                       address: creatorAddress,
+                       value:tokenAmount,
+                       id: stx.makeTxId(`${address}`, this.value, this.from),
+                     },
+                     txOut:{
+                       spend: blockchain[0].data.txIn,
+                       from: blockchain[0].data.txIn.address,
+                       address: address,
+                       value: members[address].balance - tokenAmount,
+                       id: stx.makeTxId(`${address}`, `value`, `from`),
+                     },
+                   }
+                   var latest = schain.getLatestBlock(vindicoin.blockchain)
+                   var nextBlock =  schain.generateNextBlock(data, latest, vindicoin.blockchain)
+
+                   console.log('next block', nextBlock);
+                   if (schain.isValidNewBlock(nextBlock, latest) === true) {
+                     console.log('true');
+                     vindicoin.blockchain.push(nextBlock)
+                     return vindicoin.blockchain.indexOf(nextBlock)
+                     // return updateBalanceState(members[`${creatorAddress}`],members[`${address}`], tokenAmount)
+
+                   }
+
+               }
+             },
+
+____________________________________________________________________________________________________________________________________
+
+#### TradeContract.execute.transaction
+Creates txIn and txOut data for transaction, generates the next block with this transaction data, if block is valid then the new block is returned
+
+- @params {object} - the txOut you are spending
+- @params {string} - the address that the assets are being transferred to
+- @params {int} - the amount to transfer
+- @params {function} - newTxIn
+- @params {function} - newTxOut
+- @returns {object} - nextBlock
+
+      transaction: function (spend, address, value,newTxIn, newTxOut) {
+        // var txI = new txIn(spend,address,value, currency)
+        // var txO = new txOut(spend, from, address, value, currency)
+        var txIn = newTxIn(spend, address, value, stx.makeTxId(address, value, spend.address))
+        var txOut = newTxOut(txIn, value, stx.makeTxId(txIn.address, value, spend.from))
+        var data = {txIn,txOut}
+        var nextblock = schain.generateNextBlock(data, schain.getLatestBlock(vindicoin.blockchain), vindicoin.blockchain)
+        console.log('\ntransaction!!!!!!\n');
+        console.log();
+        if (schain.isValidNewBlock(nextblock, schain.getLatestBlock(vindicoin.blockchain)) === true) {
+          console.log('true transaction\n');
+          return(nextblock)
+        }
+      }
+      
+____________________________________________________________________________________________________________________________________      
