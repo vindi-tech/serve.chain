@@ -405,6 +405,13 @@ A key in the tradecontract json object that holds all the members of the contrac
              [`${address}`]: { balance: tokenAmount, type: 'contract', owner: creatorAddress},
              [`${creatorAddress}`]: {balance:0, type: 'user', }
            };
+           
+##### example : members
+ 
+       members: {
+              'xncn03': {balance: 100000, type 'contract', owner: '0x00'},
+              '0x00': { balance: 0, type: 'user' }
+       }
 _______________________________________________________________________________________________________________________________________
 
 #### TradeContract.execute : functions that are able to be executed when interacting with the contract
