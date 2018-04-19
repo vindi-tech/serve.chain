@@ -175,4 +175,99 @@ When a user does a GET request to the send API it performs this function which p
           });
 
         }
+j
+## Tx.js
+A package for interacting and building transactions along with their txIn's and txOut's
+
+### txOut constructor
+The txOut that will correspond with a txIn and will show the value the sender gets in return after spending the original txOut
+- @params {object} - the txOut you are going to spend
+- @params {string} - the address which will be the new owner
+- @params {int} - the amount you are wanting to send
+- @params {string} - the id of the txOut
+
+       class txOut {
+         constructor(spend, address, value, id) {
+
+             this.spend = spend
+             this.address= spend.address
+             this.value = spend.value - value
+             this.from = address
+
+         }
+       }
 ________________________________________________________________________________________________________________________________________
+
+### txIn constructor
+The txIn to send to peer to later be converted to txOut. Shows the value the peer will be receiving
+- @params {object} - the txOut you are going to spend
+- @params {string} - the address which will be the new owner
+- @params {int} - the amount you are wanting to send
+- @params {string} - the id of the txOut
+
+       class txIn {
+           constructor(spend, address, value, id) {
+               this.spend = spend
+               this.address= address
+               this.value = value
+               this.from = spend.address
+
+
+           }
+         }
+         
+________________________________________________________________________________________________________________________________________
+
+### newTxIn 
+A function to create a new txIn
+- @params {object} - the txOut you are going to spend
+- @params {string} - the address which will be the new owner
+- @params {int} - the amount you are wanting to send
+- @params {string} - the id of the txOut
+- @returns {object} - txIn
+
+#### code : 
+
+       exports.newTxIn = (spend, address, value, id) => {
+         var txO = new txIn(spend, address, value, id);
+         return txO
+       } 
+
+### newTxOut
+The txOut showing the leftover balance of the sender.
+- @params {object} - *txIn* - the corresponding txIn
+- @params {int} - *value* - the amount you are wanting to send
+- @params {string} - id - the id of the txOut
+- @returns {object} - txOut
+
+       exports.newTxOut = (txIn, value, id) => {
+         if (txIn.address === 'bank') {
+           var txO = new txOut(txIn.spend, txIn.address, txIn.value, 'cash');
+           return txO
+         } else {
+           var txO = new txOut(txIn.spend, txIn.address, value, id);
+           return txO
+         }
+       }
+
+_______________________________________________________________________________________________________________________________________
+
+### transaction - create a new transaction
+Creates the txIn and txOut objects needed for a valid transactions
+- @params {object} - the txOut you are going to spend
+- @params {string} - the address which will be the new owner
+- @params {int} - the amount you are wanting to send
+- @params {string} - newTxIn : function
+- @params {object} - newTxOut : function
+- @returns {object} - trans - the transaction object.
+
+
+       exports.transaction = (spend, address, value, newTxIn, newTxOut) => {
+
+         var txIn1 = newTxIn(spend, address, value)
+         var trans = {
+           txIn: txIn1,
+           txOut: newTxOut(txIn1)
+         }
+         return(trans)
+       }
