@@ -14,8 +14,8 @@ A package for interacting with blocks and the blockchain
 @param {string} - *hash* - the SHA256 encrypted hash of the timestamp + previousHash + index </br>
 A constructor used to create a block.
 
-##### Code 
-        class Block {
+##### code :            
+       class Block {
           constructor(index, previousHash, timestamp, data, hash) {
             this.index = index;
             this.previousHash = previousHash
@@ -24,6 +24,7 @@ A constructor used to create a block.
             this.hash = hash
           }
           }
+          
 ##### Example
     {
       index: 1,
@@ -35,7 +36,7 @@ A constructor used to create a block.
         txOut:{}
       }
     }
-    
+________________________________________________________________________________________________________________________________________
     
 #### getLatestBlock - Gets the latest block in the blockchain
 - @param {array} - blockchain
@@ -45,6 +46,7 @@ A constructor used to create a block.
 
       exports.getLatestBlock = (blockchain) => { return blockchain[blockchain.length - 1]}
 
+________________________________________________________________________________________________________________________________________
 
 #### generateNextBlock - Generates the next block in the blockchain
 - @param {object} - blockData
@@ -65,6 +67,7 @@ A constructor used to create a block.
           return block
       };
 
+________________________________________________________________________________________________________________________________________
 #### isValidNewBlock
 Checks the validity of a newly created block
 - @params {object} - newBlock
@@ -87,6 +90,8 @@ Checks the validity of a newly created block
         return true;
     };
 
+________________________________________________________________________________________________________________________________________
+
 #### isValidChain 
 Checks to see if a chain is valid by doing isValidNewBlock for every block. The starting new block index is 1 and the latestBlock is the newblock index - 1
 - @params {array} - the current chain to validate
@@ -108,7 +113,8 @@ Note - this is validating a whole chain by validating each block in the chain
             }
           }
         }
-        
+________________________________________________________________________________________________________________________________________
+
  #### replaceChain - determines whether or not to replace the blockchain
  ##### If new blocks are found they are validated and added to the chain
  
@@ -129,8 +135,7 @@ Note - this is validating a whole chain by validating each block in the chain
                 console.log('Received blockchain invalid');
             }
            };
-           
- 
+________________________________________________________________________________________________________________________________________           
 #### getAllTx - gets all txIns
 txIns are the data being sent to another user and contains the transaction info they will need to receive the funds
 
@@ -147,6 +152,7 @@ txIns are the data being sent to another user and contains the transaction info 
           }
           return txOutsAll
         }
+________________________________________________________________________________________________________________________________________
 
 #### send - allows user to send data to peers
 When a user does a GET request to the send API it performs this function which performs a post request to the peer. Express is used to handle this post request and if the newBlock is validated it is added to your peers chain
@@ -169,3 +175,4 @@ When a user does a GET request to the send API it performs this function which p
           });
 
         }
+________________________________________________________________________________________________________________________________________
