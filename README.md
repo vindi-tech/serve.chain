@@ -287,6 +287,8 @@ Creates the txIn and txOut objects needed for a valid transactions
 
 _____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
+# Smart Contracts
+![](https://cdn.dribbble.com/users/989466/screenshots/4107749/gems-review-port-dribbble-alex-pasquarella_1x.png)
 ## trading.js
 For deploying a tradeable currency as a Smart Contract
 
@@ -316,7 +318,7 @@ ________________________________________________________________________________
        }
 
 _______________________________________________________________________________________________________________________________________
-
+![](https://cdn.dribbble.com/users/721524/screenshots/3895840/bit_hub_03_1x.png)
 ### Trade Contract a constructor for creating a TradeContract
 
 - @params {string} - creatorAddress
@@ -433,6 +435,7 @@ ________________________________________________________________________________
 - findUSTXO
 - deployContract
 _______________________________________________________________________________________________________________________________________
+![](https://cdn.dribbble.com/users/721524/screenshots/3893000/artboard_1.png)
 #### TradeContract.execute.deployContract()
 Allows users to deploy a trading contract. </br>
 Upon creation all the tokens belong to the address of the contract but when deployContract is ran it creates a transaction containing the txIn and txOut data of the tokens being moved from the contracts address to the contract creator's address. If the created block is valid it will add the block to the current users blockchain.
@@ -476,7 +479,7 @@ Upon creation all the tokens belong to the address of the contract but when depl
              },
 
 ____________________________________________________________________________________________________________________________________
-
+![](https://cdn.dribbble.com/users/1418633/screenshots/3944885/explainer_video_-_studiotale.gif)
 #### TradeContract.execute.transaction
 Creates txIn and txOut data for transaction, generates the next block with this transaction data, if block is valid then the new block is returned
 
