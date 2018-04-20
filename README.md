@@ -4,7 +4,7 @@ A package for creating a blockchain and also includes a front end UI to integrat
 
 ***
 
-![](https://cdn.dribbble.com/users/1418633/screenshots/3944885/explainer_video_-_studiotale.gif)
+![](https://cdn.dribbble.com/users/1097873/screenshots/4334138/dribbble1.png)
 
 
 ## Chain.js 
