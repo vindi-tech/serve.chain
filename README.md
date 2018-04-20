@@ -435,7 +435,7 @@ ________________________________________________________________________________
 - findUSTXO
 - deployContract
 _______________________________________________________________________________________________________________________________________
-![](https://cdn.dribbble.com/users/721524/screenshots/3893000/artboard_1.png)
+![](https://cdn.dribbble.com/users/623319/screenshots/3543987/funnel-01.png)
 #### TradeContract.execute.deployContract()
 Allows users to deploy a trading contract. </br>
 Upon creation all the tokens belong to the address of the contract but when deployContract is ran it creates a transaction containing the txIn and txOut data of the tokens being moved from the contracts address to the contract creator's address. If the created block is valid it will add the block to the current users blockchain.
