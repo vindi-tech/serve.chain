@@ -1,5 +1,11 @@
 # serve.chain
+
 A package for creating a blockchain and also includes a front end UI to integrate in the last stages of development
+
+***
+
+![](https://cdn.dribbble.com/users/124813/screenshots/4187333/522_icon1-floydworx.png)
+
 
 ## Chain.js 
 A package for interacting with blocks and the blockchain
@@ -179,8 +185,12 @@ ________________________________________________________________________________
 _______________________________________________________________________________________________________________________________________
 _______________________________________________________________________________________________________________________________________
 
+
+
 ## Tx.js
 A package for interacting and building transactions along with their txIn's and txOut's
+
+![](https://image.slidesharecdn.com/coqbzj2yqqwbi7l00aso-signature-8e37ebc6495c7d6063b42449e4cd455a3188d45846f27819820d9a9e52f6e6b3-poli-150514060710-lva1-app6892/95/bitcoin-cryptocurrency-19-638.jpg?cb=1431583748)
 
 ### txOut constructor
 The txOut that will correspond with a txIn and will show the value the sender gets in return after spending the original txOut
